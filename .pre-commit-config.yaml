@@ -14,3 +14,5 @@ repos:
       - id: gitleaks
         args: ['--verbose', '--redact']
         additional_dependencies: []  # Try without additional dependencies
+# temp change
+# staged change
