@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    environment {
+        SONAR_HOST_URL = 'http://192.168.50.4:9000'
+        DOCKER_REGISTRY = 'anasnk9'
+        APP_NAME = 'devops-app'
+        STAGING_NAMESPACE = 'staging'
+        PRODUCTION_NAMESPACE = 'production'
+    }
+
+    tools {
+        maven 'M3'
+        jdk 'jdk21'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/ANASnk9/timesheet-devops.git',
+                    credentialsId: 'jenkins-github'
+            }
+        }
+
+        stage('SAST - SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('sonarqube') {
+                        sh '''
+                        mvn clean compile sonar:sonar \
+                          -Dsonar.projectKey=devops_app \
+                          -Dsonar.projectName="DevOps Application" \
+                          -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.sources=src \
+                          -Dsonar.java.binaries=target/classes
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
