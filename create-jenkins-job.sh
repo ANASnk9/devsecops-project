@@ -1,0 +1,26 @@
+#!/bin/bash
+echo "🔧 CRÉATION DU JOB JENKINS"
+echo "=========================="
+
+echo "1. Vérification des prérequis..."
+sudo systemctl status jenkins --no-pager | head -3
+
+echo ""
+echo "2. Instructions pour créer le job :"
+echo ""
+echo "📋 ÉTAPES MANUELLES :"
+echo "1. Jenkins → New Item"
+echo "2. Nom : devsecops-pipeline"
+echo "3. Type : Pipeline"
+echo "4. GitHub project : https://github.com/medchennouf/devsecops-project"
+echo "5. Build Triggers : ✅ 'GitHub hook trigger for GITScm polling'"
+echo "6. Pipeline :"
+echo "   - Definition : Pipeline script from SCM"
+echo "   - SCM : Git"
+echo "   - Repository : https://github.com/medchennouf/devsecops-project.git"
+echo "   - Credentials : votre token GitHub"
+echo "   - Branch : */main"
+echo "   - Script Path : Jenkinsfile-complet-devsecops"
+echo "7. Save"
+echo ""
+echo "🎯 Après création, testez avec un nouveau push !"
