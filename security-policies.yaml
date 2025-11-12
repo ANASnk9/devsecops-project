@@ -1,0 +1,22 @@
+# security-policies.yaml
+security_gates:
+  sast:
+    enabled: true
+    max_critical: 0
+    max_high: 2
+  sca:
+    enabled: true
+    max_critical: 0
+    max_high: 3
+  dast:
+    enabled: true
+    max_critical: 0
+    max_high: 1
+  container:
+    enabled: true
+    max_critical: 0
+    max_high: 2
+
+compliance_threshold: 90
+notifications:
+  email: security-team@example.com
