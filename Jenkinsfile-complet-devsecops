@@ -23,27 +23,69 @@ pipeline {
         }
 
         stage('SAST - SonarQube Analysis') {
-    steps {
-        script {
-            dir('timesheet-devops') {
-                // Inject the SonarQube token stored as a Jenkins secret text
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            steps {
+                script {
+                    dir('timesheet-devops') {
+                        // Inject the SonarQube token stored as a Jenkins secret text
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            sh """
+                            mvn clean compile sonar:sonar \
+                              -Dsonar.projectKey=devops_app \
+                              -Dsonar.projectName="DevOps Application" \
+                              -Dsonar.host.url=$SONAR_HOST_URL \
+                              -Dsonar.login=$SONAR_TOKEN \
+                              -Dsonar.sources=src/main/java \
+                              -Dsonar.tests=src/test/java \
+                              -Dsonar.exclusions=src/test/java/**/*Mock.java \
+                              -Dsonar.java.binaries=target/classes
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("re-SAST Trivy File Scan") {
+            steps {
+                sh "trivy fs --severity HIGH,CRITICAL --exit-code 1 ."
+            }
+        }
+
+        stage("SAST OWASP Dependency Check Scan") {
+            steps {
+                dependencyCheck additionalArguments: '''
+                    --scan .
+                    --disableYarnAudit
+                    --disableNodeAudit
+                ''',
+                odcInstallation: 'dp-check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage("Build Docker Image") {
+            steps {
+                script {
+                    // ✅ Use default values if variables are missing
+                    def imageName = "myappdevops"
+                    def buildNumber = "local"
+
+                    env.IMAGE_TAG = "${imageName}:${buildNumber}"
+
+                    // Remove old images if they exist
+                    sh "docker stop ${imageName} || true"
+                    sh "docker rm ${imageName} || true"
+                    sh "docker image rm ${imageName}:${buildNumber} || true"
+                    sh "docker image rm ${imageName}:latest || true"
+
+                    // Build new image
                     sh """
-                    mvn clean compile sonar:sonar \
-                      -Dsonar.projectKey=devops_app \
-                      -Dsonar.projectName="DevOps Application" \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_TOKEN \
-                      -Dsonar.sources=src/main/java \
-                      -Dsonar.tests=src/test/java \
-                      -Dsonar.exclusions=src/test/java/**/*Mock.java \
-                      -Dsonar.java.binaries=target/classes
+                        echo '🧱 Building Docker image locally...'
+                        docker build -t ${imageName}:local .
+                        echo "✅ Built local image: ${env.IMAGE_TAG}"
                     """
                 }
             }
         }
-    }
-}
-
     }
 }
