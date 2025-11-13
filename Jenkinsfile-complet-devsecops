@@ -23,21 +23,25 @@ pipeline {
         }
 
         stage('SAST - SonarQube Analysis') {
-            steps {
-                script {
-                        dir('timesheet-devops') {
-                        sh '''
-                        mvn clean compile sonar:sonar \
-                          -Dsonar.projectKey=devops_app \
-                          -Dsonar.projectName="DevOps Application" \
-                          -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.login=squ_e667476d1c79b8643742a1af28529ea9e87aa3f4\
-                          -Dsonar.sources=src \
-                          -Dsonar.java.binaries=target/classes
-                        '''
-                    }
+    steps {
+        script {
+            dir('timesheet-devops') {
+                // Inject the SonarQube token stored as a Jenkins secret text
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh """
+                    mvn clean compile sonar:sonar \
+                      -Dsonar.projectKey=devops_app \
+                      -Dsonar.projectName="DevOps Application" \
+                      -Dsonar.host.url=$SONAR_HOST_URL \
+                      -Dsonar.login=$SONAR_TOKEN \
+                      -Dsonar.sources=src \
+                      -Dsonar.java.binaries=target/classes
+                    """
                 }
             }
         }
+    }
+}
+
     }
 }
