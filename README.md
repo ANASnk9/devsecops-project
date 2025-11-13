@@ -18,3 +18,4 @@ Projet académique de démonstration d'un pipeline CI/CD sécurisé avec intégr
 ## Auteur
 Étudiant en DevOps/Sécurité
 # Test Jenkins Poll SCM
+# Test GitHub webhook
