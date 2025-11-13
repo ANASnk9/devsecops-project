@@ -26,6 +26,7 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('sonarqube') {
+                        dir('timesheet-devops') {
                         sh '''
                         mvn clean compile sonar:sonar \
                           -Dsonar.projectKey=devops_app \
@@ -35,6 +36,7 @@ pipeline {
                           -Dsonar.java.binaries=target/classes
                         '''
                     }
+                  }
                 }
             }
         }
