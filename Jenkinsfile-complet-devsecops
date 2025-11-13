@@ -34,7 +34,8 @@ pipeline {
                       -Dsonar.projectName="DevOps Application" \
                       -Dsonar.host.url=$SONAR_HOST_URL \
                       -Dsonar.login=$SONAR_TOKEN \
-                      -Dsonar.sources=src \
+                      -Dsonar.sources=src/main/java \
+                      -Dsonar.tests=src/test/java \
                       -Dsonar.java.binaries=target/classes
                     """
                 }
