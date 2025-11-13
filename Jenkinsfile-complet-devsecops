@@ -25,13 +25,14 @@ pipeline {
         stage('SAST - SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    withSonarQubeEnv('sonarqube') {
                         dir('timesheet-devops') {
                         sh '''
                         mvn clean compile sonar:sonar \
                           -Dsonar.projectKey=devops_app \
                           -Dsonar.projectName="DevOps Application" \
                           -Dsonar.host.url=$SONAR_HOST_URL \
+                          -Dsonar.login=squ_e667476d1c79b8643742a1af28529ea9e87aa3f4\
                           -Dsonar.sources=src \
                           -Dsonar.java.binaries=target/classes
                         '''
