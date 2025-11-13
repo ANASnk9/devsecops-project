@@ -20,3 +20,4 @@ Projet académique de démonstration d'un pipeline CI/CD sécurisé avec intégr
 # Test Jenkins Poll SCM
 # Test GitHub webhook
 # test webhook
+## Test automatique du pipeline (Anas)
