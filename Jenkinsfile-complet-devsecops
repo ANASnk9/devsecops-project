@@ -36,6 +36,7 @@ pipeline {
                       -Dsonar.login=$SONAR_TOKEN \
                       -Dsonar.sources=src/main/java \
                       -Dsonar.tests=src/test/java \
+                      -Dsonar.exclusions=src/test/java/**/*Mock.java \
                       -Dsonar.java.binaries=target/classes
                     """
                 }
