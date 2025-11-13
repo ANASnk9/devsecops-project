@@ -25,7 +25,6 @@ pipeline {
         stage('SAST - SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('sonarqube') {
                         dir('timesheet-devops') {
                         sh '''
                         mvn clean compile sonar:sonar \
@@ -37,7 +36,6 @@ pipeline {
                           -Dsonar.java.binaries=target/classes
                         '''
                     }
-                  }
                 }
             }
         }
