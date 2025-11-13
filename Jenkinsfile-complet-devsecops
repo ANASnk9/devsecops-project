@@ -25,7 +25,7 @@ pipeline {
         stage('SAST - SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('sonarqube') {
+                    withSonarQubeEnv([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                         dir('timesheet-devops') {
                         sh '''
                         mvn clean compile sonar:sonar \
