@@ -53,15 +53,22 @@ pipeline {
 
 
         stage("SAST OWASP Dependency Check Scan") {
-            steps {
-                dependencyCheck additionalArguments: '''
-                    --scan .
-                    --disableYarnAudit
-                    --disableNodeAudit
-                ''',
-                odcInstallation: 'dp-check'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-            }
+    steps {
+        // Run the dependency-check scan
+        dependencyCheck(
+            odcInstallation: 'dp-check',
+            additionalArguments: """
+                --scan .
+                --disableYarnAudit
+                --disableNodeAudit
+            """
+        )
+
+        // Publish the report
+        dependencyCheckPublisher(
+            pattern: '**/dependency-check-report.xml'
+        )
+    }
         }
 
         stage("Build Docker Image") {
