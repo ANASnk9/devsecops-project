@@ -17,7 +17,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/ANASnk9/timesheet-devops.git',
+                    url: 'https://github.com/ANASnk9/devsecops-project.git',
                     credentialsId: 'jenkins-github'
             }
         }
@@ -25,7 +25,7 @@ pipeline {
         stage('SAST - SonarQube Analysis') {
             steps {
                 script {
-                    dir('timesheet-devops') {
+                     
                         // Inject the SonarQube token stored as a Jenkins secret text
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                             sh """
@@ -39,7 +39,7 @@ pipeline {
                               -Dsonar.exclusions=src/test/java/**/*Mock.java \
                               -Dsonar.java.binaries=target/classes
                             """
-                        }
+                        
                     }
                 }
             }
