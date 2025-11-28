@@ -1,13 +1,13 @@
-# Use a lightweight JDK base image
-FROM eclipse-temurin:17-jdk-jammy
+# Stage 1: build
+FROM maven:3.9.2-eclipse-temurin-21 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy your JAR from Maven target folder
-COPY target/*.jar app.jar
-
-# Expose port (adjust to your app)
+# Stage 2: runtime
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Run the app zzddfddd
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-
