@@ -21,6 +21,14 @@ pipeline {
                     credentialsId: 'jenkins-github'
             }
         }
+stage('Build JAR') {
+            steps {
+                sh """
+                    echo "🔨 Building application JAR..."
+                    mvn clean package -DskipTests
+                """
+            }
+        }
 
         stage('SAST - SonarQube Analysis') {
             steps {
