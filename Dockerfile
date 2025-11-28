@@ -1,5 +1,5 @@
-# Stage 1: build
-FROM maven:3.9.2-jdk-21 AS builder
+# Stage 1: compile
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
