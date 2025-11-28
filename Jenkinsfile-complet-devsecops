@@ -85,36 +85,25 @@ pipeline {
             }
         }
 
-        stage('Build & Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 dir('devsecops-project') {
                     script {
-                        def imageName = "anasnk9/myappdevops"
+                        def imageName = "myappdevops"
                         def buildNumber = "local"
 
                         env.IMAGE_TAG = "${imageName}:${buildNumber}"
-                        env.LATEST_TAG = "${imageName}:latest"
 
-                        withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
-                                                         usernameVariable: 'DOCKER_USER', 
-                                                         passwordVariable: 'DOCKER_PASS')]) {
-                            sh """
-                                docker stop myappdevops || true
-                                docker rm myappdevops || true
-                                docker image rm ${IMAGE_TAG} || true
-                                docker image rm ${LATEST_TAG} || true
+                        sh """
+                            docker stop ${imageName} || true
+                            docker rm ${imageName} || true
+                            docker image rm ${imageName}:${buildNumber} || true
+                            docker image rm ${imageName}:latest || true
 
-                                echo "🧱 Building Docker image..."
-                                docker build -t ${IMAGE_TAG} -t ${LATEST_TAG} .
-
-                                echo "🔑 Logging into Docker Hub..."
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-
-                                echo "🚀 Pushing Docker images..."
-                                docker push ${IMAGE_TAG}
-                                docker push ${LATEST_TAG}
-                            """
-                        }
+                            echo "🧱 Building Docker image locally..."
+                            docker build -t ${imageName}:${buildNumber} .
+                            echo "✅ Built image: ${env.IMAGE_TAG}"
+                        """
                     }
                 }
             }
@@ -122,4 +111,3 @@ pipeline {
 
     } // END stages
 } // END pipeline
-
