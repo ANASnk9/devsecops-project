@@ -109,5 +109,5 @@ pipeline {
             }
         }
 
-    } // END stages
+    } // END stage
 } // END pipeline
