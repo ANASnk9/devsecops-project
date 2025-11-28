@@ -21,6 +21,7 @@ pipeline {
                     credentialsId: 'jenkins-github'
             }
         }
+}
 stage('Build JAR') {
             steps {
                 sh """
