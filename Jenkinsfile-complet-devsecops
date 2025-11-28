@@ -69,33 +69,52 @@ pipeline {
 
         stage('SAST OWASP Dependency Check Scan') {
             steps {
-        dir('devsecops-project') {
-            script {
-                def imageName = "anasnk9/myappdevops"
-                def buildNumber = "local"
+                dir('devsecops-project') {
+                    dependencyCheck(
+                        odcInstallation: 'dp-check',
+                        additionalArguments: """
+                            --scan .
+                            --disableYarnAudit
+                            --disableNodeAudit
+                        """
+                    )
+                    dependencyCheckPublisher(
+                        pattern: '**/dependency-check-report.xml'
+                    )
+                }
+            }
+        }
 
-                env.IMAGE_TAG = "${imageName}:${buildNumber}"
-                env.LATEST_TAG = "${imageName}:latest"
+        stage('Build & Push Docker Image') {
+            steps {
+                dir('devsecops-project') {
+                    script {
+                        def imageName = "anasnk9/myappdevops"
+                        def buildNumber = "local"
 
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
-                                                 usernameVariable: 'DOCKER_USER', 
-                                                 passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        docker stop myappdevops || true
-                        docker rm myappdevops || true
-                        docker image rm ${IMAGE_TAG} || true
-                        docker image rm ${LATEST_TAG} || true
+                        env.IMAGE_TAG = "${imageName}:${buildNumber}"
+                        env.LATEST_TAG = "${imageName}:latest"
 
-                        echo "🧱 Building Docker image..."
-                        docker build -t ${IMAGE_TAG} -t ${LATEST_TAG} .
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', 
+                                                         usernameVariable: 'DOCKER_USER', 
+                                                         passwordVariable: 'DOCKER_PASS')]) {
+                            sh """
+                                docker stop myappdevops || true
+                                docker rm myappdevops || true
+                                docker image rm ${IMAGE_TAG} || true
+                                docker image rm ${LATEST_TAG} || true
 
-                        echo "🔑 Logging into Docker Hub..."
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                echo "🧱 Building Docker image..."
+                                docker build -t ${IMAGE_TAG} -t ${LATEST_TAG} .
 
-                        echo "🚀 Pushing Docker images..."
-                        docker push ${IMAGE_TAG}
-                        docker push ${LATEST_TAG}
-                    """
+                                echo "🔑 Logging into Docker Hub..."
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+                                echo "🚀 Pushing Docker images..."
+                                docker push ${IMAGE_TAG}
+                                docker push ${LATEST_TAG}
+                            """
+                        }
                     }
                 }
             }
@@ -103,3 +122,4 @@ pipeline {
 
     } // END stages
 } // END pipeline
+
