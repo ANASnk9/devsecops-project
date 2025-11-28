@@ -74,6 +74,7 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 script {
+                      dir('timesheet-devops') {
                     // ✅ Use default values if variables are missing
                     def imageName = "myappdevops"
                     def buildNumber = "local"
@@ -93,6 +94,7 @@ pipeline {
                         echo "✅ Built local image: ${env.IMAGE_TAG}"
                     """
                 }
+}
             }
         }
     }
