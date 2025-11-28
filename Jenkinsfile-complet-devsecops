@@ -1,5 +1,6 @@
 pipeline {
     agent any
+
     environment {
         SONAR_HOST_URL = 'http://192.168.50.4:9000'
         DOCKER_REGISTRY = 'anasnk9'
@@ -14,6 +15,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -21,8 +23,8 @@ pipeline {
                     credentialsId: 'jenkins-github'
             }
         }
-}
-stage('Build JAR') {
+
+        stage('Build JAR') {
             steps {
                 sh """
                     echo "🔨 Building application JAR..."
@@ -34,10 +36,8 @@ stage('Build JAR') {
         stage('SAST - SonarQube Analysis') {
             steps {
                 script {
-                     
-                        // Inject the SonarQube token stored as a Jenkins secret text
-                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh """
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh """
                             mvn clean compile sonar:sonar \
                               -Dsonar.projectKey=devops_app \
                               -Dsonar.projectName="DevOps Application" \
@@ -47,62 +47,55 @@ stage('Build JAR') {
                               -Dsonar.tests=src/test/java \
                               -Dsonar.exclusions=src/test/java/**/*Mock.java \
                               -Dsonar.java.binaries=target/classes
-                            """
-                        
+                        """
                     }
                 }
             }
         }
 
-        stage("re-SAST Trivy File Scan") {
-    steps {
-        sh "trivy fs --severity HIGH,CRITICAL . || true"
-    }
-}
-
-
-        stage("SAST OWASP Dependency Check Scan") {
-    steps {
-        // Run the dependency-check scan
-        dependencyCheck(
-            odcInstallation: 'dp-check',
-            additionalArguments: """
-                --scan .
-                --disableYarnAudit
-                --disableNodeAudit
-            """
-        )
-
-        // Publish the report
-        dependencyCheckPublisher(
-            pattern: '**/dependency-check-report.xml'
-        )
-    }
+        stage('re-SAST Trivy File Scan') {
+            steps {
+                sh "trivy fs --severity HIGH,CRITICAL . || true"
+            }
         }
 
-        stage("Build Docker Image") {
+        stage('SAST OWASP Dependency Check Scan') {
             steps {
-                script {   
-                    // ✅ Use default values if variables are missing
+                dependencyCheck(
+                    odcInstallation: 'dp-check',
+                    additionalArguments: """
+                        --scan .
+                        --disableYarnAudit
+                        --disableNodeAudit
+                    """
+                )
+                dependencyCheckPublisher(
+                    pattern: '**/dependency-check-report.xml'
+                )
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
                     def imageName = "myappdevops"
                     def buildNumber = "local"
 
                     env.IMAGE_TAG = "${imageName}:${buildNumber}"
 
-                    // Remove old images if they exist
-                    sh "docker stop ${imageName} || true"
-                    sh "docker rm ${imageName} || true"
-                    sh "docker image rm ${imageName}:${buildNumber} || true"
-                    sh "docker image rm ${imageName}:latest || true"
-
-                    // Build new image
                     sh """
-                        echo '🧱 Building Docker image locally...'
-                        docker build -t ${imageName}:local .
-                        echo "✅ Built local image: ${env.IMAGE_TAG}"
+                        docker stop ${imageName} || true
+                        docker rm ${imageName} || true
+                        docker image rm ${imageName}:${buildNumber} || true
+                        docker image rm ${imageName}:latest || true
+
+                        echo "🧱 Building Docker image locally..."
+                        docker build -t ${imageName}:${buildNumber} .
+                        echo "✅ Built image: ${env.IMAGE_TAG}"
                     """
                 }
             }
         }
-    }
-}
+
+    } // END stages
+} // END pipeline
