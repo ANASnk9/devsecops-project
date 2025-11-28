@@ -18,10 +18,12 @@ pipeline {
 
         stage('Checkout') {
             steps {
+        dir('devsecops-project') {  // <-- ensure Maven builds here
+
                 git branch: 'main',
                     url: 'https://github.com/ANASnk9/devsecops-project.git',
                     credentialsId: 'jenkins-github'
-            }
+            }}
         }
 
         stage('Build JAR') {
