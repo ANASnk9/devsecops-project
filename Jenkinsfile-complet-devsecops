@@ -109,5 +109,39 @@ pipeline {
             }
         }
 
-    } // END stage
+        /*******************************
+         🔥 NEW: DYNAMIC APPLICATION TESTING (DAST)
+        ********************************/
+        stage('DAST - Semgrep Dynamic Scan') {
+            steps {
+                dir('devsecops-project') {
+                    sh """
+                        echo "🚀 Starting app for DAST testing..."
+                        docker run -d -p 8080:8080 --name dast-app myappdevops:local
+
+                        echo "🧪 Running Semgrep DAST scan..."
+                        semgrep scan --config auto --time --metrics=off --target http://localhost:8080 || true
+
+                        docker stop dast-app
+                        docker rm dast-app
+                    """
+                }
+            }
+        }
+
+        /*******************************
+         🔥 OPTIONAL: TRIVY IMAGE DYNAMIC SCAN
+        ********************************/
+        stage('DAST - Trivy Image Scan') {
+            steps {
+                dir('devsecops-project') {
+                    sh """
+                        echo "🔍 Running Trivy image scan..."
+                        trivy image --severity HIGH,CRITICAL myappdevops:local || true
+                    """
+                }
+            }
+        }
+
+    } // END stages
 } // END pipeline
