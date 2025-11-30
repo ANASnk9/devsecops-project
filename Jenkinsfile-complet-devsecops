@@ -117,10 +117,10 @@ pipeline {
                 dir('devsecops-project') {
                     sh """
                         echo "🚀 Starting app for DAST testing..."
-                        docker run -d -p 8080:8080 --name dast-app myappdevops:local
+                        docker run -d -p 9090:9090 --name dast-app myappdevops:local
 
                         echo "🧪 Running Semgrep DAST scan..."
-                        semgrep scan --config auto --time --metrics=off --target http://localhost:8080 || true
+                        semgrep scan --config auto --time --metrics=off --target http://localhost:9090 || true
 
                         docker stop dast-app
                         docker rm dast-app
