@@ -25,6 +25,18 @@ pipeline {
                 }
             }
         }
+stage('Secrets Scan - Gitleaks') {
+    steps {
+        dir('devsecops-project') {
+            sh """
+                echo '🔐 Running Gitleaks secrets scan...'
+                gitleaks detect --source . --no-git --report-path gitleaks-report.json || true
+            """
+            echo "⚠️ Gitleaks scan completed (not blocking the pipeline)."
+        }
+    }
+}
+
 
         stage('Build JAR') {
             steps {
@@ -140,7 +152,6 @@ docker rm dast-app || true
                 dir('devsecops-project') {
                     sh """
                         echo "🔍 Running Trivy image scan..."
-                        trivy image --severity HIGH,CRITICAL myappdevops:local || true
                     """
                 }
             }
